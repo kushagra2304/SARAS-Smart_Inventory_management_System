@@ -19,7 +19,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white text-gray-800">
-      {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-4 bg-white shadow-sm sticky top-0 z-50">
         <h1 className="text-2xl font-bold text-[#010D2A]">SARAS Inventory System</h1>
         <Button
@@ -29,8 +28,6 @@ export default function Home() {
           Login
         </Button>
       </nav>
-
-      {/* Hero Section */}
       <section className="text-center py-16 px-6">
         <motion.h2
           className="text-4xl font-extrabold text-[#010D2A] mb-4"
@@ -48,8 +45,6 @@ export default function Home() {
           low-stock alerts, and interactive dashboards, SARAS streamlines stock operations and improves accuracy.
         </p>
       </section>
-
-      {/* Features Section */}
       <section className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
         {features.map((feature, idx) => (
           <Card key={idx} className="shadow-md hover:shadow-lg transition-shadow duration-300">
@@ -60,8 +55,6 @@ export default function Home() {
           </Card>
         ))}
       </section>
-
-      {/* Call to Action */}
       <div className="text-center pb-16">
         <p className="text-lg text-gray-600 mb-4">
           This system aims to reduce manual effort, improve stock visibility, and streamline supply chains.

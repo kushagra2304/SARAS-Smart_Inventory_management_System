@@ -10,7 +10,6 @@ const DashboardLayout = ({ children }) => {
 
   return (
     <div className="flex h-screen">
-      {/* Sidebar */}
       <div className="w-64 bg-gray-900 text-white p-4">
         <h2 className="text-xl font-bold mb-6">Inventory System</h2>
         <ul>
@@ -26,8 +25,6 @@ const DashboardLayout = ({ children }) => {
           </li>
         </ul>
       </div>
-
-      {/* Main Content */}
       <div className="flex-1 p-6">{children}</div>
     </div>
   );

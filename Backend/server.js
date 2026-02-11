@@ -9,7 +9,7 @@ const bodyParser = require("body-parser");
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
-app.use(bodyParser.json()); // ✅ Parse JSON requests
+app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 
@@ -27,15 +27,14 @@ const corsOptions = {
           callback(new Error('Not allowed by CORS'));
         }
     },
-    credentials: true, // Allow cookies and authorization headers
+    credentials: true, 
     methods: "GET,POST,PUT,DELETE",
     allowedHeaders: "Content-Type,Authorization"
     ,
 };
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // Handle preflight requests
+app.options("*", cors(corsOptions)); 
 
-// ✅ Using a Connection Pool for Better Performance
 const db = mysql.createPool({
     connectionLimit: 10,
     host: process.env.DB_HOST,
@@ -43,9 +42,8 @@ const db = mysql.createPool({
     password: process.env.DB_PASS,
     database: "inventory_db",
     port: process.env.DB_PORT,
-}); // Use promise-based API for async/await
+}); 
 
-// ✅ Checking Database Connection
 db.getConnection((err, connection) => {
     if (err) {
         console.error("Database connection failed:", err);
@@ -55,7 +53,6 @@ db.getConnection((err, connection) => {
     }
 });
 
-// ✅ Middleware for JWT Authentication
 const authenticateToken = (req, res, next) => {
     
     const token = req.cookies.token;
@@ -64,17 +61,14 @@ const authenticateToken = (req, res, next) => {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
         
         if (err) return res.status(403).json({ message: "Invalid Token" });
-        req.user = decoded; // ✅ Correct assignment
+        req.user = decoded;
         console.log("Decoded user:", req.user);
         next();
     });
 };
 
-// ✅ Admin & User Login with Secure JWT Cookie
 app.post("/login", (req, res) => {
-    const { email, password, role } = req.body; // include role in request
-
-    // Check for missing fields
+    const { email, password, role } = req.body; 
     if (!email || !password || !role) {
         return res.status(400).json({ message: "All fields are required" });
     }
@@ -85,20 +79,15 @@ app.post("/login", (req, res) => {
             console.error("Database Query Error:", err);
             return res.status(500).json({ message: "Database Error" });
         }
-
-        // Check if user exists
         if (results.length === 0) {
             return res.status(403).json({ message: "User not found" });
         }
 
         const user = results[0];
 
-        // Check if role matches
         if (user.role !== role) {
             return res.status(403).json({ message: `Access denied for role: ${role}` });
         }
-
-        // Compare password
         bcrypt.compare(password, user.password, (err, isMatch) => {
             if (err) {
                 return res.status(500).json({ message: "Error comparing passwords" });
@@ -107,22 +96,16 @@ app.post("/login", (req, res) => {
             if (!isMatch) {
                 return res.status(401).json({ message: "Invalid credentials" });
             }
-
-            // Generate JWT with role info
             const token = jwt.sign(
-                { id: user.id, email: user.email, role: user.role }, // includes role
+                { id: user.id, email: user.email, role: user.role }, 
                 process.env.JWT_SECRET,
                 { expiresIn: "1h" }
             );
-
-            // Set cookie securely
             res.cookie("token", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production"?true:false,
                 sameSite: "Strict",
             });
-
-            // Successful login response
             res.json({
                 message: "Login successful",
                 user: { id: user.id, email: user.email, role: user.role }
@@ -132,7 +115,7 @@ app.post("/login", (req, res) => {
 });
 
 
-// ✅ Get All Users (Admin Only)
+// Get All Users
 app.get("/admin/users", authenticateToken, (req, res) => {
     if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
 
@@ -142,7 +125,7 @@ app.get("/admin/users", authenticateToken, (req, res) => {
     });
 });
 
-// ✅ Add User (Admin Only)
+// Add User 
 app.post("/admin/users", authenticateToken, async (req, res) => {
     if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
 
@@ -165,7 +148,7 @@ app.post("/admin/users", authenticateToken, async (req, res) => {
     }
 });
 
-// ✅ Delete User (Admin Only)
+// ✅ Delete User
 app.delete("/admin/users/:id", authenticateToken, (req, res) => {
     if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
 
@@ -176,7 +159,7 @@ app.delete("/admin/users/:id", authenticateToken, (req, res) => {
     });
 });
 
-// ✅ Add User Public Endpoint
+// Add User 
 app.post("/api/auth/add-user", async (req, res) => {
   try {
       const { name, email, password, role } = req.body;
@@ -195,23 +178,23 @@ app.post("/api/auth/add-user", async (req, res) => {
           [name, email, hashedPassword, role],
           (err, result) => {
               if (err) {
-                  console.error("MySQL Insert Error:", err); // 🔍 Logs MySQL errors
+                  console.error("MySQL Insert Error:", err); 
                   return res.status(500).json({ message: "Database Error", error: err.message });
               }
               res.status(201).json({ message: "User added successfully", id: result.insertId });
           }
       );
   } catch (error) {
-      console.error("Server Error:", error); // 🔍 Logs server errors
+      console.error("Server Error:", error);
       res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 });
 
-// ✅ Fetch All Users (For Manage Users Page)
+// Fetch All Users (For Manage Users Page)
 app.get("/admin/users", authenticateToken, (req, res) => {
   if (req.user.role !== "admin") return res.status(403).json({ message: "Forbidden" });
 
-  const query = "SELECT id, name, email, role FROM users"; // Fetch relevant user data
+  const query = "SELECT id, name, email, role FROM users"; 
   db.query(query, (err, results) => {
       if (err) {
           console.error("Database Error:", err);
@@ -246,65 +229,10 @@ app.put("/admin/users/:id/role", authenticateToken, (req, res) => {
 app.get("/api/inventory-pie", (req, res) => {
     db.query("SELECT * FROM inventory ORDER BY created_at DESC", (err, results) => {
       if (err) return res.status(500).json({ error: err.message });
-      // console.log("Inventory Pie Data Sent to Frontend:", results);
       res.json({products:results});
     });
   });
 
-// app.post("/inventory/sales-trend", async (req, res) => {
-//   const { items } = req.body;
-//   if (!items || !Array.isArray(items)) {
-//     return res.status(400).json({ error: "Invalid input" });
-//   }
-
-//   try {
-//     // Get today's date
-//     const today = new Date();
-//     const result = [];
-
-//     // Iterate over last 3 months
-//     for (let i = 2; i >= 0; i--) {
-//       const targetDate = new Date(today.getFullYear(), today.getMonth() - i, 1);
-//       const year = targetDate.getFullYear();
-//       const month = targetDate.getMonth() + 1; // JS months are 0-indexed
-
-//       const monthLabel = targetDate.toLocaleString("default", { month: "short" }); // "Jan", "Feb", etc.
-//       const row = { month: `${monthLabel} ${year}` };
-
-//       for (const code of items) {
-//         const [data] = await db.promise().query(
-//           `SELECT 
-//               SUM(quantity) as total 
-//            FROM transaction 
-//            WHERE item_code = ? 
-//              AND transaction_type = 'issued'
-//              AND MONTH(transaction_date) = ? 
-//              AND YEAR(transaction_date) = ?`,
-//           [code, month, year]
-//         );
-
-//         row[code] = data[0].total || 0;
-//       }
-
-//       result.push(row);
-//     }
-
-//     res.json(result);
-//   } catch (err) {
-//     console.error("Sales Trend Error:", err);
-//     res.status(500).json({ error: "Internal server error" });
-//   }
-// });
-
-// app.get('/inventory/all-products', async (req, res) => {
-//   try {
-//     const products = db.query('SELECT * FROM inventory');
-//     res.json(products);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: 'Server error' });
-//   }
-// });
 app.get("/inventory", (req, res) => {
   const query = "SELECT * FROM inventory";
 
@@ -316,7 +244,6 @@ app.get("/inventory", (req, res) => {
 
 
 // Add Inventory Item
-
 app.post("/inventory", (req, res) => {
   const {
     comp_code,
@@ -330,7 +257,6 @@ app.post("/inventory", (req, res) => {
     pack_size
   } = req.body;
 
-  // Check required fields
   if (
     !comp_code ||
     !description ||
@@ -343,8 +269,6 @@ app.post("/inventory", (req, res) => {
   ) {
     return res.status(400).json({ error: "All fields are required" });
   }
-
-  // Default pack_size to 1 if unit_type is "Single Unit"
   const finalPackSize = unit_type === "Single Unit" ? 1 : pack_size;
 
   const query = `
@@ -385,7 +309,6 @@ app.delete("/inventory/:id", (req, res) => {
 app.post("/inventory/transaction", (req, res) => {
     const { item_code, quantity, transaction_type, price } = req.body;
 
-    // Input validation
     if (!item_code || !quantity || !transaction_type || price === undefined) {
         return res.status(400).json({ error: "Item code, quantity, transaction type, and price are required." });
     }
@@ -424,8 +347,6 @@ app.post("/inventory/transaction", (req, res) => {
                         res.status(400).json({ error: "Invalid operation. Not enough stock or item code does not exist." });
                     });
                 }
-
-                // Get the updated remaining quantity
                 connection.query("SELECT quantity FROM inventory WHERE comp_code = ?", [item_code], (err, rows) => {
                     if (err) {
                         return connection.rollback(() => {
@@ -466,12 +387,9 @@ app.post("/inventory/transaction", (req, res) => {
         });
     });
 });
-
-
+//images upload
 const multer = require("multer");
 const path = require("path");
-
-// Configure file storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "./uploads/"),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname),
@@ -492,10 +410,6 @@ app.post("/api/inventory/upload-image", upload.single("image"), (req, res) => {
     res.json({ success: true, imagePath });
   });
 });
-
-
-
-// Fetch All Past Transactions
 app.get("/inventory/transactions", (req, res) => {
     const fetchQuery = `
         SELECT 
@@ -522,9 +436,6 @@ app.get("/inventory/transactions", (req, res) => {
     });
 });
 
-
-
-
 app.get('/inventory/reports', async (req, res) => {
     try {
         const [transactions] = await db.promise().query(`
@@ -540,11 +451,7 @@ app.get('/inventory/reports', async (req, res) => {
     }
 });
 
-
-
-
-
-// ✅ Fetch Low Stock Items (quantity < 10)
+// Fetch Low Stock Items
 app.get("/api/inventory/low-stock", authenticateToken, (req, res) => {
   const LOW_STOCK_THRESHOLD = 10;
 
@@ -568,20 +475,14 @@ app.get("/api/inventory/low-stock", authenticateToken, (req, res) => {
 //BARDCODE SCANNER
 app.get("/api/products/barcode/:barcode", (req, res) => {
     const { barcode } = req.params;
-  
-    // Query the database to get the product by barcode
     db.query("SELECT * FROM inventory WHERE barcode = ?", [barcode], (error, results) => {
       if (error) {
         console.error('Error fetching product by barcode:', error);
         return res.status(500).json({ error: 'Server error' });
       }
-  
-      // If no product found, return 404
       if (results.length === 0) {
         return res.status(404).json({ message: "Product not found" });
       }
-  
-      // Return the first product if found
       res.json(results[0]);
     });
   });
@@ -608,8 +509,6 @@ app.get("/api/products/barcode/:barcode", (req, res) => {
         if (!item_code || !quantity || !transaction_type || price === undefined) {
           throw new Error("Each item must include item_code, quantity, transaction_type, and price.");
         }
-
-        // Inventory update query
         let updateQuery, updateValues;
         if (transaction_type === "issued") {
           updateQuery = "UPDATE inventory SET quantity = quantity - ? WHERE comp_code = ? AND quantity >= ?";
@@ -624,15 +523,11 @@ app.get("/api/products/barcode/:barcode", (req, res) => {
         if (updateResult.affectedRows === 0) {
           throw new Error(`Invalid operation. Not enough stock or item code does not exist: ${item_code}`);
         }
-
-        // Fetch updated remaining quantity
         const [rows] = await connection.query(
           "SELECT quantity FROM inventory WHERE comp_code = ?",
           [item_code]
         );
         const remaining_after = rows[0]?.quantity ?? 0;
-
-        // Insert transaction log with remaining_after
         await connection.query(
           `INSERT INTO transaction (item_code, quantity, transaction_type, price, transaction_date, remaining_after)
            VALUES (?, ?, ?, ?, NOW(), ?)`,
@@ -661,11 +556,8 @@ app.get("/api/products/barcode/:barcode", (req, res) => {
   });
 });
 
-
-
-// // API endpoint to fetch all products
 app.get('/api/inventory', (req, res) => {
-    const query = 'SELECT * FROM inventory'; // Fetch all records 
+    const query = 'SELECT * FROM inventory';
     
     db.query(query, (err, results) => {
       if (err) {
@@ -676,8 +568,6 @@ app.get('/api/inventory', (req, res) => {
       }
     });
   });
-
-  // Usage route - fetch usage data by product ID
   app.get('/api/usage/:itemCode', (req, res) => {
     const itemCode = req.params.itemCode;
   
@@ -699,14 +589,11 @@ app.get('/api/inventory', (req, res) => {
         console.error("Forecast Fetch Error:", err);
         return res.status(500).json({ error: "Database query error" });
       }
-  
-      // Fallbacks if no transactions exist
       const monthlyUsages = results.map(r => r.total_issued);
       const averageMonthlyUsage = monthlyUsages.length > 0
         ? Math.round(monthlyUsages.reduce((a, b) => a + b, 0) / monthlyUsages.length)
         : 0;
-  
-      // Get current stock
+
       const stockQuery = `SELECT quantity FROM inventory WHERE comp_code = ?`;
       db.query(stockQuery, [itemCode], (err, stockResults) => {
         if (err) {
@@ -728,22 +615,8 @@ app.get('/api/inventory', (req, res) => {
       });
     });
   });
-  
-  //view all inventory items
-//   app.get('/api/inventory/all', authenticateJWT, (req, res) => {
-//     const query = 'SELECT * FROM inventory';
-  
-//     db.query(query, (err, results) => {
-//       if (err) {
-//         console.error('Error fetching products:', err);
-//         return res.status(500).json({ success: false, message: 'Server Error' });
-//       }
-//       res.status(200).json({ success: true, products: results });
-//     });
-//   });
 
 //USERS
-// Route to get all inventory items (for user view only)
 app.get("/api/user/inventory", (req, res) => {
     const query = "SELECT id, comp_code, quantity, description, barcode, category FROM inventory"; 
     db.query(query, (err, results) => {
@@ -751,13 +624,12 @@ app.get("/api/user/inventory", (req, res) => {
             console.error("Database Query Error:", err);
             return res.status(500).json({ message: "Database Error" });
         }
-        // console.log("Fetched Inventory Data:", results); // ✅ Check what is fetched
         res.json({ inventory: results });
     });
 });
 
 app.get('/api/user/inventory', (req, res) => {
-    const query = 'SELECT * FROM inventory'; // Fetch all records 
+    const query = 'SELECT * FROM inventory';
     
     db.query(query, (err, results) => {
       if (err) {
@@ -769,7 +641,6 @@ app.get('/api/user/inventory', (req, res) => {
     });
   });
 
-  // Usage route - fetch usage data by product ID
   app.get('/api/usage/user/:itemCode', (req, res) => {
     const itemCode = req.params.itemCode;
   
@@ -791,14 +662,10 @@ app.get('/api/user/inventory', (req, res) => {
         console.error("Forecast Fetch Error:", err);
         return res.status(500).json({ error: "Database query error" });
       }
-  
-      // Fallbacks if no transactions exist
       const monthlyUsages = results.map(r => r.total_issued);
       const averageMonthlyUsage = monthlyUsages.length > 0
         ? Math.round(monthlyUsages.reduce((a, b) => a + b, 0) / monthlyUsages.length)
         : 0;
-  
-      // Get current stock
       const stockQuery = `SELECT quantity FROM inventory WHERE comp_code = ?`;
       db.query(stockQuery, [itemCode], (err, stockResults) => {
         if (err) {
@@ -821,60 +688,23 @@ app.get('/api/user/inventory', (req, res) => {
     });
   });
   
-
-// app.get('/api/user/requests',authenticateToken, (req, res) => {
-    
-//     const userId = req.user.id;
-//     console.log("USER is:", userId);
-
-//     const query = "SELECT * FROM item_requests WHERE user_id = ?";
-//     db.query(query, [userId], (err, results) => {
-//         if (err) return res.status(500).json({ message: "Database error" });
-//         res.json({ requests: results });
-//     });
-// });
-
-// app.post('/api/user/request-item', authenticateToken, (req, res) => {
-//     const { item_id, quantity } = req.body;
-//     const userId = req.user.id;
-
-//     console.log("Request body:", req.body); // For debugging
-//     console.log("User ID:", userId); // For debugging
-
-//     const query = `
-//         INSERT INTO item_requests (user_id, item_id, quantity, status, request_date) 
-//         VALUES (?, ?, ?, 'Pending', NOW())
-//     `;
-
-//     db.query(query, [userId, item_id, quantity], (err, result) => {
-//         if (err) {
-//             console.error("Database error:", err);
-//             return res.status(500).json({ message: "Database error", error: err.sqlMessage });
-//         }
-//         res.json({ message: "Request submitted successfully" });
-//     });
-// });
-  
 //BARDCODE SCANNER
 app.get("/api/user/products/barcode/:barcode", (req, res) => {
   const { barcode } = req.params;
 
-  // Query the database to get the product by barcode
   db.query("SELECT * FROM inventory WHERE barcode = ?", [barcode], (error, results) => {
     if (error) {
       console.error('Error fetching product by barcode:', error);
       return res.status(500).json({ error: 'Server error' });
     }
-
-    // If no product found, return 404
     if (results.length === 0) {
       return res.status(404).json({ message: "Product not found" });
     }
 
-    // Return the first product if found
     res.json(results[0]);
   });
 });
+//transaction
 
 app.post("/user/inventory/transaction-scan", (req, res) => {
   const { items } = req.body;
@@ -886,7 +716,7 @@ app.post("/user/inventory/transaction-scan", (req, res) => {
   db.getConnection(async (err, rawConnection) => {
     if (err) return res.status(500).json({ error: "Database connection error: " + err.message });
 
-    const connection = rawConnection.promise(); // ✅ use promise-based wrapper
+    const connection = rawConnection.promise();
 
     try {
       await connection.beginTransaction();
@@ -898,8 +728,6 @@ app.post("/user/inventory/transaction-scan", (req, res) => {
         if (!item_code || !quantity || !transaction_type || !price) {
           throw new Error("Each item must include item_code, quantity, transaction_type, and price.");
         }
-
-        // Update inventory
         const [updateResult] = await connection.query(
           "UPDATE inventory SET quantity = quantity - ? WHERE comp_code = ? AND quantity >= ?",
           [quantity, item_code, quantity]
@@ -908,8 +736,6 @@ app.post("/user/inventory/transaction-scan", (req, res) => {
         if (updateResult.affectedRows === 0) {
           throw new Error(`Not enough stock or invalid item code: ${item_code}`);
         }
-
-        // Insert into transaction log
         await connection.query(
           "INSERT INTO transaction (item_code, quantity, transaction_type, price, transaction_date) VALUES (?, ?, ?, ?, NOW())",
           [item_code, quantity, transaction_type, price]
@@ -919,7 +745,7 @@ app.post("/user/inventory/transaction-scan", (req, res) => {
       }
 
       const billId = `BILL_${Date.now()}`;
-      await connection.commit(); // ✅ await commit
+      await connection.commit();
       rawConnection.release();
 
       return res.json({
@@ -929,16 +755,13 @@ app.post("/user/inventory/transaction-scan", (req, res) => {
       });
 
     } catch (error) {
-      await connection.rollback(); // ✅ await rollback
+      await connection.rollback();
       rawConnection.release();
       console.error("Transaction processing error:", error);
       return res.status(400).json({ error: error.message });
     }
   });
 });
-
-  
-// Assuming you're using Express and a MySQL connection pool
 app.get("/inventory/all-products", (req, res) => {
   const query = "SELECT comp_code, description FROM inventory";
 
@@ -951,20 +774,17 @@ app.get("/inventory/all-products", (req, res) => {
   });
 });
 
-
+// SALES TREND 
   app.post("/inventory/sales-trend", (req, res) => {
   const { items } = req.body;
 
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: "No products selected" });
   }
-
   const placeholders = items.map(() => "?").join(",");
-  
-  // Calculate date 3 months ago (start of that month)
   const now = new Date();
-  now.setDate(1); // start of current month
-  now.setMonth(now.getMonth() - 2); // go back 2 full months + current month = last 3 months
+  now.setDate(1); 
+  now.setMonth(now.getMonth() - 2); 
   const startDate = now.toISOString().slice(0, 10);
 
   const query = `
@@ -984,16 +804,11 @@ app.get("/inventory/all-products", (req, res) => {
       console.error("Sales Trend Query Error:", err);
       return res.status(500).json({ error: "Database query error" });
     }
-
-    // Transform the results into chart-friendly format
     const chartData = {};
     results.forEach(({ item_code, month, total_issued }) => {
       if (!chartData[month]) chartData[month] = { month };
       chartData[month][item_code] = total_issued;
     });
-
-    // Fill missing months for all selected items with zero if needed (optional)
-
     res.json(Object.values(chartData));
   });
 });
@@ -1022,12 +837,8 @@ app.get("/inventory/all-products", (req, res) => {
     }
   );
 });
-
-
 app.post("/inventory/transaction-so", (req, res) => {
     const { item_code, quantity, transaction_type, price } = req.body;
-
-    // Input validation
     if (!item_code || !quantity || !transaction_type || price === undefined) {
         return res.status(400).json({ error: "Item code, quantity, transaction type, and price are required." });
     }
@@ -1066,8 +877,6 @@ app.post("/inventory/transaction-so", (req, res) => {
                         res.status(400).json({ error: "Invalid operation. Not enough stock or item code does not exist." });
                     });
                 }
-
-                // Get the updated remaining quantity
                 connection.query("SELECT quantity FROM inventory WHERE item_code = ?", [item_code], (err, rows) => {
                     if (err) {
                         return connection.rollback(() => {
@@ -1137,22 +946,13 @@ app.get("/inventory/transactions-so", (req, res) => {
     });
 });
 
-
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-
-// ✅ Logout Route
 app.post("/logout", (req, res) => {
     res.clearCookie("token", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "Strict" });
     res.json({ message: "Logged out successfully" });
 });
- 
-
-// ✅ Start Server
 const PORT = process.env.PORT || 5000;
-
-// ✅ Bind to 0.0.0.0 so it's accessible over local network (not just localhost)
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on http://0.0.0.0:${PORT}`);
 });
-

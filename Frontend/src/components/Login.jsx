@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import axios from "axios";
-import upgov from "../assets/upgov.jpg"; // Ensure you have this image in your assets
+import upgov from "../assets/upgov.jpg"; 
 const BASE_URL = import.meta.env.VITE_API_URL;
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
   const handleRoleChange = (newRole) => {
     if (newRole) {
       setRole(newRole);
-      setError(""); // Clear error when role changes
+      setError("");
     }
   };
 
@@ -40,7 +40,7 @@ export default function LoginPage() {
     if (userRole === "admin") navigate("/admin");
     else if (userRole === "user") navigate("/user");
     else if (userRole === "stock_operator") navigate("/stock");
-    else navigate("/dashboard"); // fallback
+    else navigate("/dashboard");
   } catch (err) {
     console.error("Login Error:", err);
     setError(err.response?.data?.message || "Invalid email or password!");
@@ -130,16 +130,6 @@ export default function LoginPage() {
               Login
             </Button>
           </form>
-
-          {/* <div className="mt-6 text-center text-sm text-gray-600">
-            Don&apos;t have an account?{" "}
-            <span
-              className="text-blue-600 hover:underline cursor-pointer font-medium"
-              onClick={() => navigate(`/signup/${role}`)}
-            >
-              Sign up as {role}
-            </span>
-          </div> */}
         </CardContent>
       </Card>
     </div>

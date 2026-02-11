@@ -68,7 +68,6 @@ export default function ProductSalesChart() {
           <CardDescription>Track last 3 months' sales by product</CardDescription>
         </div>
 
-        {/* Top-Right Controls */}
         <div className="flex flex-col gap-2 w-full md:w-auto md:items-end">
           <Label>Select Product</Label>
           <div className="flex gap-2">

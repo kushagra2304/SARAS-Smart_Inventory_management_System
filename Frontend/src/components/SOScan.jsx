@@ -34,19 +34,9 @@ const handleScannerInput = (e) => {
       fetchProduct(scannedCode);
     }
   } else if (e.key.length === 1) {
-    // Only append real characters, not modifiers like Shift, Control, etc.
     bufferRef.current += e.key;
   }
 };
-
-
-//  const hints = new Map();
-// hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-//   BarcodeFormat.CODE_128,
-//   BarcodeFormat.EAN_13,
-//   BarcodeFormat.QR_CODE,
-//   BarcodeFormat.UPC_A,
-// ]);
 
   useEffect(() => {
   const codeReader = new BrowserMultiFormatReader();
@@ -57,19 +47,16 @@ const handleScannerInput = (e) => {
       console.warn("videoRef is not ready");
       return;
     }
-
-    
-
 try {
   const resultStream = await codeReader.decodeFromVideoDevice(
     null,
     videoRef.current,
     async (result, error) => {
-      console.log("🔍 Callback triggered"); // Always fires when frame is processed
+      console.log("Callback triggered"); 
 
       if (result) {
         const code = result.getText();
-        console.log("✅ Barcode Detected:", code);
+        console.log("Barcode Detected:", code);
 
        const cleanedCode = code.replace(/[^a-zA-Z0-9]/g, '').trim();
 
@@ -82,26 +69,24 @@ try {
 
           setTimeout(() => {
             scanningLockRef.current = false;
-            console.log("🔓 Lock released");
+            console.log("Lock released");
           }, 1000);
         } else {
-          console.log("🚫 Either code empty or scanning locked");
+          console.log("Either code empty or scanning locked");
         }
       } else if (error) {
-        console.log("❌ No code detected:", error.message);
+        console.log(" No code detected:", error.message);
       }
     }
   );
 
   stopScanner = () => resultStream.stop();
-  console.log("📷 Scanner started");
+  console.log("Scanner started");
 } catch (err) {
-  console.error("💥 Error initializing ZXing:", err);
+  console.error("Error initializing ZXing:", err);
   setError("Failed to access camera for scanning.");
 }
   };
-
-  // Delay to ensure video element is mounted
   const timeoutId = setTimeout(startScanner, 500);
 
   return () => {
@@ -112,13 +97,13 @@ try {
 
 
   const fetchProduct = async (code) => {
-    console.log(`📦 Scanning product with code: ${code}`);
+    console.log(`Scanning product with code: ${code}`);
     setLoading(true);
     setError("");
     try {
       const res = await axios.get(`${BASE_URL}/api/products/barcode/${code}`);
       const product = res.data;
-      console.log("✅ Product fetched:", product);
+      console.log("Product fetched:", product);
 
       if (
         !product ||
@@ -137,20 +122,10 @@ try {
   if (existingIndex !== -1) {
     const updatedCart = [...prevCart];
     const itemToUpdate = { ...updatedCart[existingIndex] };
-
-    // Current quantity in cart
     const currentQty = Number(itemToUpdate.qty) || 0;
-
-    // Max available quantity from product stock
     const maxQty = Number(product.quantity);
-
-    // Product price as number
     const price = Number(product.price);
-
-    // Increase qty by 1 but don't exceed maxQty
     const newQty = Math.min(currentQty + 1, maxQty);
-
-    // Update qty and totalPrice
     itemToUpdate.qty = newQty;
     itemToUpdate.totalPrice = price * newQty;
 
@@ -158,8 +133,6 @@ try {
 
     return updatedCart;
   }
-
-  // If product is not in cart, add it with qty 1 and calculate totalPrice
   return [
     ...prevCart,
     {
@@ -170,11 +143,7 @@ try {
     },
   ];
 });
-
-
-
-
-      setSuccessMessage(""); // clear previous success msg if any
+      setSuccessMessage("");
     } catch (err) {
       console.error("Fetch error:", err);
       setError(`Product not found or invalid. Details: ${err.message}`);
@@ -302,7 +271,7 @@ Thank you for shopping!`;
   return (
     <div className="p-6 space-y-6 relative">
        <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
-        🧾 Scan Product (USB Scanner)
+        Scan Product (USB Scanner)
       </h2>
 
       <p className="text-center text-gray-600 font-medium">
@@ -390,14 +359,6 @@ Thank you for shopping!`;
           <div className="text-gray-500 text-center">Your cart is empty</div>
         )}
       </div>
-
-      {/* {successMessage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white px-8 py-4 rounded-lg shadow-lg text-green-700 text-lg font-semibold">
-            ✅ {successMessage}
-          </div>
-        </div>
-      )} */}
        {bill && (
         <Card className="max-w-2xl mx-auto border-indigo-300 bg-indigo-50" id="bill-section">
           <CardContent className="p-4 space-y-3">
@@ -442,7 +403,6 @@ Thank you for shopping!`;
                 Download PDF
               </button>
             </div>
-             {/* WhatsApp Section */}
   <div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
     <input
       type="tel"

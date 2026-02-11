@@ -15,31 +15,6 @@ const navLinks = [
     icon: <PackageCheck size={18} />,
     path: "/user/inventory",
   },
-  // {
-  //   title: "My Products",
-  //   icon: <PackageCheck size={18} />,
-  //   path: "/user/products",
-  // },
-  // {
-  //   title: "Order History",
-  //   icon: <FileBarChart2 size={18} />,
-  //   path: "/user/transactions",
-  // },
-  // {
-  //   title: "Account Settings",
-  //   icon: <UserCog size={18} />,
-  //   path: "/user/settings",
-  // },
-  // {
-  //   title: "Reports",
-  //   icon: <FileBarChart2 size={18} />,
-  //   path: "/user/reports",
-  // },
-  // {
-  //   title: "Forecast & Predictions",
-  //   icon: <Sun size={18} />,
-  //   path: "/user/predictions",
-  // },
   {
     title: "Scan Products",
     icon: <Camera size={18} />,
@@ -58,7 +33,6 @@ const UserLayout = () => {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      {/* Sidebar */}
       <div className="fixed top-0 left-0 h-full w-64 bg-[#010D2A] text-white shadow-lg p-4 z-40">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-xl font-semibold">User Panel</h2>
@@ -122,7 +96,6 @@ const UserLayout = () => {
         </nav>
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 p-6 bg-gray-100 w-full overflow-y-auto ml-64">
         <Outlet />
       </div>
