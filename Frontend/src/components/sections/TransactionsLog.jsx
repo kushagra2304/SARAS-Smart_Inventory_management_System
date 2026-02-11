@@ -55,7 +55,7 @@ export default function ManageTransactions() {
     price: txn.price !== undefined ? parseFloat(txn.price).toFixed(2) : "0.00",
     type: txn.transaction_type || "N/A",
     date: new Date(txn.transaction_date).toLocaleDateString(),
-    remaining: txn.remaining_after ?? "N/A", // ✅ changed to match new backend column
+    remaining: txn.remaining_after ?? "N/A",
     updatedBy: txn.updated_by || "System",
   }))
 );

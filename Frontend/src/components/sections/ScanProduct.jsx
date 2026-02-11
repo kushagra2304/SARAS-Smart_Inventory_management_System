@@ -34,7 +34,6 @@ const handleScannerInput = (e) => {
       fetchProduct(scannedCode);
     }
   } else if (e.key.length === 1) {
-    // Only append real characters, not modifiers like Shift, Control, etc.
     bufferRef.current += e.key;
   }
 };
@@ -65,7 +64,7 @@ try {
     null,
     videoRef.current,
     async (result, error) => {
-      console.log("🔍 Callback triggered"); // Always fires when frame is processed
+      console.log("🔍 Callback triggered");
 
       if (result) {
         const code = result.getText();
@@ -100,8 +99,6 @@ try {
   setError("Failed to access camera for scanning.");
 }
   };
-
-  // Delay to ensure video element is mounted
   const timeoutId = setTimeout(startScanner, 500);
 
   return () => {
@@ -137,20 +134,10 @@ try {
   if (existingIndex !== -1) {
     const updatedCart = [...prevCart];
     const itemToUpdate = { ...updatedCart[existingIndex] };
-
-    // Current quantity in cart
     const currentQty = Number(itemToUpdate.qty) || 0;
-
-    // Max available quantity from product stock
     const maxQty = Number(product.quantity);
-
-    // Product price as number
     const price = Number(product.price);
-
-    // Increase qty by 1 but don't exceed maxQty
     const newQty = Math.min(currentQty + 1, maxQty);
-
-    // Update qty and totalPrice
     itemToUpdate.qty = newQty;
     itemToUpdate.totalPrice = price * newQty;
 
@@ -158,8 +145,6 @@ try {
 
     return updatedCart;
   }
-
-  // If product is not in cart, add it with qty 1 and calculate totalPrice
   return [
     ...prevCart,
     {
@@ -170,11 +155,7 @@ try {
     },
   ];
 });
-
-
-
-
-      setSuccessMessage(""); // clear previous success msg if any
+      setSuccessMessage("");
     } catch (err) {
       console.error("Fetch error:", err);
       setError(`Product not found or invalid. Details: ${err.message}`);
@@ -442,7 +423,6 @@ Thank you for shopping!`;
                 Download PDF
               </button>
             </div>
-             {/* WhatsApp Section */}
   <div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
     <input
       type="tel"

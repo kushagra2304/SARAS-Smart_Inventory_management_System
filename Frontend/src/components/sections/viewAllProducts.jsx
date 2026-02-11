@@ -43,7 +43,7 @@ const ViewAllProducts = () => {
 
     const formData = new FormData();
     formData.append("image", file);
-    formData.append("comp_code", compCode); // match backend
+    formData.append("comp_code", compCode);
 
     try {
       const uploadRes = await axios.post(`${BASE_URL}/api/inventory/upload-image`, formData, {
@@ -54,7 +54,7 @@ const ViewAllProducts = () => {
       });
 
       if (uploadRes.data.success) {
-        fetchInventory(); // Refresh inventory to get updated image
+        fetchInventory();
       }
     } catch (err) {
       console.error("Image upload failed:", err);
