@@ -12,14 +12,12 @@ app.use(cookieParser());
 app.use(bodyParser.json()); 
 app.use(bodyParser.urlencoded({ extended: true }));
 
-
-// ✅ Updated CORS Configuration
 const corsOptions = {
     origin: (origin, callback) => {
         const allowedOrigins = [
-        //   'https://inventory-management-kush.vercel.app',
-          'http://localhost:5173',
-          'http://192.168.84.169:5173', 
+          'https://inventory-management-kush.vercel.app',
+          // 'http://localhost:5173',
+          // 'http://192.168.84.169:5173', 
         ];
         if (!origin || allowedOrigins.includes(origin)) {
           callback(null, true);
